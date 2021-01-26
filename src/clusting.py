@@ -22,7 +22,6 @@ df = pd.read_csv('iris.csv')
 # Seleciona atributos a serem utilizados para clusterizar os dados
 X = df.drop(['target'], axis=1)
 
-
 # Modelo de função de distância aceita pela biblioteca PyClustering
 def my_manhattan(point1, point2):
     """
@@ -31,6 +30,8 @@ def my_manhattan(point1, point2):
     output:
         result = distância entre os dois pontos
     """
+    print(type(point1))
+
     dimension = len(point1)
     result = 0.0
     for i in range(dimension):
@@ -88,3 +89,5 @@ def model_evaluation_euclidian():
 
     # Calcula FMI
     fowlkes_mallows_score(df.target, df.y_pred)
+
+model_train_manhatan()

@@ -31,7 +31,6 @@ def modelTrain(myFunction, clustersNumber, testData):
     return clusters
 
 def modelEvaluation(clusters, completeData, labelName):
-
     """
     Importante: o índice do cluster gerado não é necessariamente
     a classe prevista por aquele cluster.
@@ -39,6 +38,8 @@ def modelEvaluation(clusters, completeData, labelName):
     for i in range(len(clusters)):
         # Label prevista pelo cluster i
         completeData.loc[clusters[i], 'y_pred'] = completeData.loc[clusters[i]].groupby(labelName).size().idxmax()
+
+    print('predicted:', completeData.y_pred)
 
     # Calcula V-measure
     return v_measure_score(completeData[labelName], completeData.y_pred)

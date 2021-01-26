@@ -4,42 +4,68 @@ import argparse
 import sys
 
 import input_reader as ir
-import terminals_set as terminal
 import genotype
 import k_means
 
 from random import randint
 
-def full(populationSize, maxDeep):
+def full(populationSize, maxDeep, terminalSetSize):
     populationGenotype = []
     for i in range(populationSize):
-        tree = genotype.generateOne(2, maxDeep)
+        tree = genotype.generateOne(2, maxDeep, terminalSetSize)
         populationGenotype.append(tree)
     return populationGenotype
 
-def grow(populationSize. maxDeep):
+def grow(populationSize, maxDeep, terminalSetSize):
     populationGenotype = []
     for i in range(populationSize):
-        tree = genotype.generateOne(1, maxDeep)
+        tree = genotype.generateOne(1, maxDeep, terminalSetSize)
         populationGenotype.append(tree)
     return populationGenotype
 
-def generatePopulation(populationSize, initType):
+def generatePopulation(populationSize, initType, terminalSetSize):
     if initType == 1:
-        return grow(populationSize, 7)
+        return grow(populationSize, 7, terminalSetSize)
     elif initType == 2:
-        return full(populationSize, 7)
+        return full(populationSize, 7, terminalSetSize)
 
+def isFunction(f):
+    return type(f) == type(dfs)
+    
+def dfs(u, tree, point1, point2):
+    f = u[0]
+    adjList = u[1]
 
+    if isFunction(f):
+        #print(f,'=>')
+        return f(dfs(tree[adjList[0]], tree, point1, point2), dfs(tree[adjList[1]], tree, point1, point2))
+    else: #f is terminal
+        if f[1] == 0:
+            #print(f'point1[{f[0]}]:{point1[f[0]]}')
+            return point1[f[0]]
+        else:
+            #print(f'point2[{f[0]}]:{point2[f[0]]}')
+            return point2[f[0]]
+import time
 def getFitness(gene, testData, completeData, columnToExclude):
     # Calculando Fitness
-
-    function = genotype.mapToFenotype(gene)
+    root = gene[0]
+    #print(gene)
+    time.sleep(2)
+    def distanceFunction(point1, point2):
+        r = dfs(root, gene, point1, point2)
+        print('dist p1,p2:', r)
+        return r
+        
+    
+    function = distanceFunction
 
     clustersNumber = 7 # passar esse valor como parametro
     clusters = k_means.modelTrain(function, clustersNumber, testData)
     fitness = k_means.modelEvaluation(clusters, completeData, columnToExclude)
-
+    
+    print(fitness)
+    
     return fitness
 
 def selectionTournament(populationFitness, k):
@@ -53,7 +79,7 @@ def selectionTournament(populationFitness, k):
 
 def crossover(parent1, parent2, crossoverProb):
     probability = randint(0, 100)/100.0
-    if probability <= crossoverProb:
+    #if probability <= crossoverProb:
         #make crossover and return generated childs
 
     
@@ -73,13 +99,19 @@ def mutation(population, mutationProb):
     return population
 
 def geneticProgramming(populationSize, initType, testData, completeData, columnToExclude, k, crossoverProb, mutationProb, elitismNumber):
-    populationGenotype = generatePopulation(populationSize, initType)
+    terminalSetSize = len(testData.columns.values)
+    populationGenotype = generatePopulation(populationSize, initType, terminalSetSize)
+
+    print('Population Generated!')
 
     for generation in range(populationSize):
         populationFitness = []
 
         for gene in populationGenotype:
-            populationFitnesse.append(getFitness(gene, testData, completeData, columnToExclude))
+            #print(gene)
+            populationFitness.append(getFitness(gene, testData, completeData, columnToExclude))
+        print('exit forced here, apagar linha abaixo')
+        exit(1)
 
         # selection
         newPopulation = []
@@ -101,7 +133,7 @@ def geneticProgramming(populationSize, initType, testData, completeData, columnT
 def initiatePoints(csvPath, columnToExclude):
     completeData = ir.readCsv(csvPath)
     testData = completeData.drop([columnToExclude], axis=1)
-    terminal.initSet(list(testData.columns.values))
+
     return completeData, testData
 
 #in e.g.: python run.py --csvPath ../data/glass_test.csv --columnToExclude glass_type --populationSize 5 --initPopulationType 1 --tournamentK 2 --crossoverProb 0.8 --mutationProb 0.2 --elitismNumber 2
