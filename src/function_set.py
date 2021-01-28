@@ -1,4 +1,3 @@
-import numpy as np
 import math
 # availabe function set to form the individuo
 #binary operations
@@ -13,5 +12,5 @@ def multB(a, b):
     return a * b
 
 #array of available functions
-functionSet = np.array([sumB, subB, multB])
+functionSet = [sumB, subB, multB]
 functionType = [0, 0, 0] #0 is binary, 1 is unary

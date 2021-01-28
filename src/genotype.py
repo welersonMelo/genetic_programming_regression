@@ -35,7 +35,6 @@ def full():
         tree[i][1].append(2*i+2)
     
     for i in range(n, totalNodes):
-        #print(i)
         terminalId = randint(0, terminalLen-1)
         tree[i][0] = [terminalId, randint(0, 1)] # if 0 - get point1, else, get from point2
     return tree
@@ -51,7 +50,7 @@ def handleFunctionGrow(tree, u, functionId, deep):
 def grow(deep, tree, u):
     tree[u] = [None,[]]
     r = randint(0, 1)
-    if r == 0 and deep < MAX_DEEP: #functions
+    if (deep == 0) or (r == 0 and deep < MAX_DEEP): #functions
         functionId = randint(0, functionsLen-1)
         f = functions[functionId]
         tree[u][0] = f
@@ -73,5 +72,16 @@ def generateOne(initType, maxDeep, terminalSetSize):
 
     return tree
         
-        
-            
+def mutateGene(gene):
+    #one point mutation
+    n = len(gene)
+
+    while True:
+        u = randint(1, n-1)
+        if gene[u] != None:
+            f = gene[u]
+            if f in functions:
+                gene[u] = functions[randint(0, functionsLen-1)]
+            else:
+                gene[u] = [randint(0, terminalLen-1), randint(0, 1)]
+            return gene

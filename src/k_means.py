@@ -31,15 +31,30 @@ def modelTrain(myFunction, clustersNumber, testData):
     return clusters
 
 def modelEvaluation(clusters, completeData, labelName):
+    copyCompleteData = completeData[:]
+    testData = copyCompleteData.drop([labelName], axis=1)
     """
     Importante: o índice do cluster gerado não é necessariamente
     a classe prevista por aquele cluster.
     """
     for i in range(len(clusters)):
-        # Label prevista pelo cluster i
-        completeData.loc[clusters[i], 'y_pred'] = completeData.loc[clusters[i]].groupby(labelName).size().idxmax()
-
-    print('predicted:', completeData.y_pred)
+        completeData.loc[clusters[i], 'y_pred'] = i
+    
+    # comparing with euclidian
+    clustersEuclidian = modelTrain(euclidianDistance, 7, testData) # 7 for glass dataset, change it for the other one
+    for i in range(len(clustersEuclidian)):
+        copyCompleteData.loc[clustersEuclidian[i], 'y_pred'] = i
+    
+    #print('euclidian v-meausure:', v_measure_score(copyCompleteData[labelName], copyCompleteData.y_pred))
 
     # Calcula V-measure
     return v_measure_score(completeData[labelName], completeData.y_pred)
+
+import math
+def euclidianDistance(point1, point2):
+    dimension = len(point1)
+    sum = 0.0
+    for i in range(dimension):
+        sum += (point1[i] - point2[i])**2
+
+    return math.sqrt(sum)
