@@ -193,7 +193,7 @@ def updateStatisticalData(populationFitness):
     repeatedIndividuals.append(totalRepeated)
 
 
-def geneticProgramming(populationSize, initType, testData, completeData, columnToExclude, k, crossoverProb, mutationProb, elitismNumber):
+def geneticProgramming(populationSize, generations, initType, testData, completeData, columnToExclude, k, crossoverProb, mutationProb, elitismNumber):
     global generatedFunctionList
     terminalSetSize = len(testData.columns.values)
     populationGenotype = generatePopulation(populationSize, initType, terminalSetSize)
@@ -202,8 +202,8 @@ def geneticProgramming(populationSize, initType, testData, completeData, columnT
 
     maxIndividualLastGeneration = []
 
-    for generation in range(populationSize):
-        print(generation, 'th generation')
+    for seculum in range(generations):
+        print(seculum, 'th generation')
         populationFitness = []
         generatedFunctionList = populationGenotype
         for gene in populationGenotype:
@@ -249,12 +249,13 @@ def initiatePoints(csvPath, columnToExclude):
 
     return completeData, testData
 
-#in e.g.: python run.py --csvPath ../data/glass_train.csv --columnToExclude glass_type --populationSize 5 --initPopulationType 1 --tournamentK 2 --crossoverProb 0.8 --mutationProb 0.2 --elitismNumber 2
+#in e.g.: python run.py --csvPath ../data/glass_train.csv --columnToExclude glass_type --populationSize 30 --generations 30 --initPopulationType 3 --tournamentK 2 --crossoverProb 0.9 --mutationProb 0.05 --elitismNumber 2
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--csvPath", required=True, help="Path to csv of dataset.", type=str)
     ap.add_argument("--columnToExclude", required=True, help="The label column to be excluded from the tests.", type=str)
     ap.add_argument("--populationSize", required=True, help="Number of individuals of a population.", type=int)
+    ap.add_argument("--generations", required=True, help="Number of generations to be produced.", type=int)
     ap.add_argument("--initPopulationType", required=True, help="Type of initialization, 1: grow; 2: full: 3: ramped half-and-half", type=int)
     ap.add_argument("--tournamentK", required=True, help="The size of K used for tournaments", type=int)
     ap.add_argument("--crossoverProb", required=True, help="Crossover probability in range [0, 1]", type=float)
@@ -262,6 +263,9 @@ def main():
     ap.add_argument("--elitismNumber", required=True, help="Number of individuals to elitism. Use 0 for no use elitism; must be an even number", type=int)
     args = vars(ap.parse_args())
 
+    popSize = args["populationSize"]
+    generations = args["generations"]
+    initPopType = args["initPopulationType"]
     csvPath = args["csvPath"]
     columnToExclude = args["columnToExclude"]
     k = args["tournamentK"]
@@ -271,19 +275,21 @@ def main():
 
     completeData, testData = initiatePoints(csvPath, columnToExclude)
 
-    bestFitness = geneticProgramming(args["populationSize"], args["initPopulationType"], testData, completeData, columnToExclude, k, crossoverProb, mutationProb, elitismNumber)
+    bestFitness = geneticProgramming(popSize, generations, initPopType, testData, completeData, columnToExclude, k, crossoverProb, mutationProb, elitismNumber)
 
     fitnessOnEuclidian = statistics.mean([calEuclidianToCompare(testData, completeData, columnToExclude) for _ in range(10)])
 
     print("Euclidian result mean: ", fitnessOnEuclidian)
     
-    f = open(f"result_1.txt", "w")
+    popSiz = args["populationSize"]
+    # name is composed by: population size + number of generations + crossover prob + mutation prob + K of tourname + elitism number of inidivdual
+    f = open(f"result_{popSiz}_{generations}_{crossoverProb}_{mutationProb}_k-{k}_{elitismNumber}.txt", "w")
     f.write('mean:' + str(meanByGeneration) + "\n")
     f.write('repeated:' + str(repeatedIndividuals) + "\n")
     f.write('median:' + str(medianByGeneration) + "\n")
     f.write('max:' + str(maxByGeneration) + "\n")
     f.write('min:' + str(minByGeneration) + "\n")
-    f.write('best final fitness: ', bestFitness)
+    f.write('best final fitness =' + str(bestFitness))
     f.close()
 
     # ploting data
