@@ -79,9 +79,10 @@ def mutateGene(gene):
     while True:
         u = randint(1, n-1)
         if gene[u] != None:
-            f = gene[u]
+            f = gene[u][0]
             if f in functions:
-                gene[u] = functions[randint(0, functionsLen-1)]
+                gene[u][0] = functions[randint(0, functionsLen-1)]
             else:
-                gene[u] = [randint(0, terminalLen-1), randint(0, 1)]
+                gene[u][0] = [randint(0, terminalLen-1), randint(0, 1)]
+
             return gene

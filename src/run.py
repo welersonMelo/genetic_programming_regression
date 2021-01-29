@@ -7,10 +7,40 @@ import input_reader as ir
 import genotype
 import k_means
 import numpy as np
-
+import statistics
+import math
+import plots
 import copy
 
 from random import randint
+
+# global variables
+KNOWN_CLUSTERS = 7
+# for plots
+meanByGeneration = []
+medianByGeneration = []
+minByGeneration = []
+maxByGeneration = []
+repeatedIndividuals = []
+generatedFunctionList = []
+# global variables
+
+
+def calEuclidianToCompare(testData, completeData, columnToExclude):
+    def euclidianDistance(point1, point2):
+        dimension = len(point1)
+        sum = 0.0
+        for i in range(dimension):
+            sum += (point1[i] - point2[i])**2
+
+        return math.sqrt(sum)
+    
+    function = euclidianDistance
+
+    clustersNumber = KNOWN_CLUSTERS
+    clusters = k_means.modelTrain(function, clustersNumber, testData)
+    fitness = k_means.modelEvaluation(clusters, completeData, columnToExclude)
+    return fitness
 
 def full(populationSize, maxDeep, terminalSetSize):
     populationGenotype = []
@@ -52,23 +82,24 @@ def dfs(u, tree, point1, point2, fromLeft):
     if isFunction(f):
         return f(dfs(tree[adjList[0]], tree, point1, point2, 1), dfs(tree[adjList[1]], tree, point1, point2, 0))
     else: #f is terminal
-        if fromLeft: 
+        if fromLeft:
             return point1[f[0]]
         else:
             return point2[f[0]]
+
 import time
 def getFitness(gene, testData, completeData, columnToExclude):
+    global KNOWN_CLUSTERS
     # Calculando Fitness
     root = gene[0]
     #print(gene)
-    #time.sleep(2)
     def distanceFunction(point1, point2):
         r = dfs(root, gene, point1, point2, 0)
         return r
         
     function = distanceFunction
 
-    clustersNumber = 7 # passar esse valor como parametro
+    clustersNumber = KNOWN_CLUSTERS
     clusters = k_means.modelTrain(function, clustersNumber, testData)
     fitness = k_means.modelEvaluation(clusters, completeData, columnToExclude)
     
@@ -121,7 +152,7 @@ def crossover(parent1, parent2, crossoverProb):
     child1 = parent1
     child2 = parent2
 
-    if probability <= crossoverProb * 100:
+    if probability <= crossoverProb * 100.0:
         while True: # review this approach
             u = randint(1, minParent-1)
             if parent1[u] != None and parent2[u] != None:
@@ -139,40 +170,77 @@ def mutation(population, mutationProb):
             population[i] = genotype.mutateGene(population[i])
     return population
 
+def updateStatisticalData(populationFitness):
+    meanFitness = statistics.fmean(populationFitness)
+    medianFitness = statistics.median(populationFitness)
+    meanByGeneration.append(meanFitness)
+    medianByGeneration.append(medianFitness)
+    maxByGeneration.append(max(populationFitness))
+    minByGeneration.append(min(populationFitness))
+    
+    # count repeated
+    totalRepeated = 0
+    for item in generatedFunctionList:
+        countRepeated = 0
+        for item2 in generatedFunctionList:
+            if item == item2:
+                countRepeated += 1
+        if countRepeated > 1:
+            totalRepeated += 1
+    #print('lenfunc:', len(generatedFunctionList))
+    #print('repeated:', totalRepeated)
+
+    repeatedIndividuals.append(totalRepeated)
+
+
 def geneticProgramming(populationSize, initType, testData, completeData, columnToExclude, k, crossoverProb, mutationProb, elitismNumber):
+    global generatedFunctionList
     terminalSetSize = len(testData.columns.values)
     populationGenotype = generatePopulation(populationSize, initType, terminalSetSize)
 
     print('Population Generated!')
 
+    maxIndividualLastGeneration = []
+
     for generation in range(populationSize):
         print(generation, 'th generation')
         populationFitness = []
-
+        generatedFunctionList = populationGenotype
         for gene in populationGenotype:
             populationFitness.append(getFitness(gene, testData, completeData, columnToExclude))
 
-
+        updateStatisticalData(populationFitness)
 
         # selection
         newPopulation = []
-        for i in range(int(populationSize/2) - elitismNumber):
+        for i in range(int(populationSize/2) - elitismNumber//2):
             parent1 = populationGenotype[selectionTournament(populationFitness, k)]
             parent2 = populationGenotype[selectionTournament(populationFitness, k)]
             child1, child2 = crossover(parent1, parent2, crossoverProb)
+            #print('parent1:', parent1, '\nparent2:', parent2)
+            #print('child1:', child1, '\nchild2:', child2)
             newPopulation.append(child1)
             newPopulation.append(child2)
         # elitism
         for i in range(elitismNumber):
             maxId = populationFitness.index(max(populationFitness))
             newPopulation.append(populationGenotype[maxId])
+            maxIndividualLastGeneration = [populationGenotype[maxId], max(populationFitness)]
             populationFitness[maxId] = -1
 
-        # mutation on new offspring
+        #mutation on new offspring
         populationGenotype = mutation(newPopulation, mutationProb)
-
-        print("fim forçado aqui")
-        exit(1)
+    #end of Genetic Programming
+    print(f"Finishing last generation! Max individual found with fitness {maxIndividualLastGeneration[1]}: ", maxIndividualLastGeneration[0])
+    # return fitness of the best individual of the last generation
+    return maxIndividualLastGeneration[1]
+    
+def handlePlots():
+    plots.plotOneLine(meanByGeneration, "Generation", "Mean")
+    plots.plotOneLine(repeatedIndividuals, "Generation", "Repeated individuals")
+    plots.plotOneLine(medianByGeneration, "Generation", "Median")
+    plots.plotOneLine(maxByGeneration, "Generation", "Max")
+    plots.plotOneLine(minByGeneration, "Generation", "Min")
 
 
 def initiatePoints(csvPath, columnToExclude):
@@ -203,10 +271,26 @@ def main():
 
     completeData, testData = initiatePoints(csvPath, columnToExclude)
 
-    geneticProgramming(args["populationSize"], args["initPopulationType"], testData, completeData, columnToExclude, k, crossoverProb, mutationProb, elitismNumber)
+    bestFitness = geneticProgramming(args["populationSize"], args["initPopulationType"], testData, completeData, columnToExclude, k, crossoverProb, mutationProb, elitismNumber)
 
+    fitnessOnEuclidian = statistics.mean([calEuclidianToCompare(testData, completeData, columnToExclude) for _ in range(10)])
+
+    print("Euclidian result mean: ", fitnessOnEuclidian)
     
-                            
+    f = open(f"result_1.txt", "w")
+    f.write('mean:' + str(meanByGeneration) + "\n")
+    f.write('repeated:' + str(repeatedIndividuals) + "\n")
+    f.write('median:' + str(medianByGeneration) + "\n")
+    f.write('max:' + str(maxByGeneration) + "\n")
+    f.write('min:' + str(minByGeneration) + "\n")
+    f.write('best final fitness: ', bestFitness)
+    f.close()
 
+    # ploting data
+    #handlePlots()
+                            
 if __name__ == "__main__":
     main()
+
+
+
