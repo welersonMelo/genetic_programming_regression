@@ -171,7 +171,7 @@ def mutation(population, mutationProb):
     return population
 
 def updateStatisticalData(populationFitness):
-    meanFitness = statistics.fmean(populationFitness)
+    meanFitness = sum(populationFitness) / (1.0 * len(populationFitness))
     medianFitness = statistics.median(populationFitness)
     meanByGeneration.append(meanFitness)
     medianByGeneration.append(medianFitness)
@@ -277,7 +277,8 @@ def main():
 
     bestFitness = geneticProgramming(popSize, generations, initPopType, testData, completeData, columnToExclude, k, crossoverProb, mutationProb, elitismNumber)
 
-    fitnessOnEuclidian = statistics.mean([calEuclidianToCompare(testData, completeData, columnToExclude) for _ in range(10)])
+    fitnessOnEuclidian = [calEuclidianToCompare(testData, completeData, columnToExclude) for _ in range(10)]
+    fitnessOnEuclidian = sum(fitnessOnEuclidian) / (1.0 * len(fitnessOnEuclidian))
 
     print("Euclidian result mean: ", fitnessOnEuclidian)
     
