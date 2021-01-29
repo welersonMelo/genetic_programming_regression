@@ -31,6 +31,7 @@ def main():
         else:
             print(line[0])
 
+# python plots.py --pathToFile results/result_30_5_0.9_0.05_k-2_2.txt
 ## main ##
 if __name__ == "__main__":
     main()

@@ -102,7 +102,6 @@ def getFitness(gene, testData, completeData, columnToExclude):
     clustersNumber = KNOWN_CLUSTERS
     clusters = k_means.modelTrain(function, clustersNumber, testData)
     fitness = k_means.modelEvaluation(clusters, completeData, columnToExclude)
-    
     #print("my func v-meausure:", fitness)
     
     return fitness
@@ -192,7 +191,7 @@ def updateStatisticalData(populationFitness):
 
     repeatedIndividuals.append(totalRepeated)
 
-
+import datetime
 def geneticProgramming(populationSize, generations, initType, testData, completeData, columnToExclude, k, crossoverProb, mutationProb, elitismNumber):
     global generatedFunctionList
     terminalSetSize = len(testData.columns.values)
@@ -206,8 +205,13 @@ def geneticProgramming(populationSize, generations, initType, testData, complete
         print(seculum, 'th generation')
         populationFitness = []
         generatedFunctionList = populationGenotype
+
+        print('Init:', datetime.datetime.now().time())
+        
         for gene in populationGenotype:
             populationFitness.append(getFitness(gene, testData, completeData, columnToExclude))
+        
+        print('end - getFiness:', datetime.datetime.now().time())
 
         updateStatisticalData(populationFitness)
 
@@ -221,6 +225,7 @@ def geneticProgramming(populationSize, generations, initType, testData, complete
             #print('child1:', child1, '\nchild2:', child2)
             newPopulation.append(child1)
             newPopulation.append(child2)
+        print('end - crossover:', datetime.datetime.now().time())
         # elitism
         for i in range(elitismNumber):
             maxId = populationFitness.index(max(populationFitness))
@@ -228,8 +233,11 @@ def geneticProgramming(populationSize, generations, initType, testData, complete
             maxIndividualLastGeneration = [populationGenotype[maxId], max(populationFitness)]
             populationFitness[maxId] = -1
 
+        print('end - elitism:', datetime.datetime.now().time())
         #mutation on new offspring
         populationGenotype = mutation(newPopulation, mutationProb)
+        print('end - mutation:', datetime.datetime.now().time())
+
     #end of Genetic Programming
     print(f"Finishing last generation! Max individual found with fitness {maxIndividualLastGeneration[1]}: ", maxIndividualLastGeneration[0])
     # return fitness of the best individual of the last generation
