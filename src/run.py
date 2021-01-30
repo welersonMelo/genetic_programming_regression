@@ -23,6 +23,7 @@ minByGeneration = []
 maxByGeneration = []
 repeatedIndividuals = []
 generatedFunctionList = []
+maxEqualIndividuals = []
 # global variables
 
 
@@ -184,6 +185,7 @@ def updateStatisticalData(populationFitness):
     totalRepeated = 0
     n = len(generatedFunctionList)
     i = 0
+    maxCount = 0
     while i < n:
         curr = generatedFunctionList[i]
         count = 0
@@ -196,12 +198,13 @@ def updateStatisticalData(populationFitness):
                 k -= 1
             j += 1
         n = k
+        maxCount = max(maxCount, count)
         if count > 1:
             totalRepeated += 1
         i += 1
         
     print('repeated:', totalRepeated)
-    
+    maxEqualIndividuals.append(maxCount)
     repeatedIndividuals.append(totalRepeated)
 
 import datetime
@@ -310,6 +313,7 @@ def main():
     f = open(f"result_{popSiz}_{generations}_{crossoverProb}_{mutationProb}_k-{k}_{elitismNumber}.txt", "w")
     f.write('mean:' + str(meanByGeneration) + "\n")
     f.write('repeated:' + str(repeatedIndividuals) + "\n")
+    f.write('maxEqual:' + str(maxEqualIndividuals) + "\n")
     f.write('median:' + str(medianByGeneration) + "\n")
     f.write('max:' + str(maxByGeneration) + "\n")
     f.write('min:' + str(minByGeneration) + "\n")
