@@ -147,8 +147,12 @@ def crossover(parent1, parent2, crossoverProb):
     minParent = min(len(parent1), len(parent2))
     probability = randint(0, 100)
 
-    child1 = parent1
-    child2 = parent2
+    if parent1 == parent2:
+        print('iguais')
+        return parent1, parent2
+
+    child1 = parent1.copy()
+    child2 = parent2.copy()
 
     if probability <= crossoverProb * 100.0:
         while True: # review this approach
@@ -178,16 +182,26 @@ def updateStatisticalData(populationFitness):
     
     # count repeated
     totalRepeated = 0
-    for item in generatedFunctionList:
-        countRepeated = 0
-        for item2 in generatedFunctionList:
-            if item == item2:
-                countRepeated += 1
-        if countRepeated > 1:
+    n = len(generatedFunctionList)
+    i = 0
+    while i < n:
+        curr = generatedFunctionList[i]
+        count = 0
+        k = len(generatedFunctionList)
+        j = 0
+        while j < k:
+            if curr == generatedFunctionList[j]:
+                generatedFunctionList.pop(j)
+                count += 1
+                k -= 1
+            j += 1
+        n = k
+        if count > 1:
             totalRepeated += 1
-    #print('lenfunc:', len(generatedFunctionList))
-    #print('repeated:', totalRepeated)
-
+        i += 1
+        
+    print('repeated:', totalRepeated)
+    
     repeatedIndividuals.append(totalRepeated)
 
 import datetime
@@ -203,7 +217,7 @@ def geneticProgramming(populationSize, generations, initType, testData, complete
     for seculum in range(generations):
         print(seculum, 'th generation')
         populationFitness = []
-        generatedFunctionList = populationGenotype
+        generatedFunctionList = populationGenotype.copy()
 
         print('Init:', datetime.datetime.now().time())
         
@@ -235,11 +249,12 @@ def geneticProgramming(populationSize, generations, initType, testData, complete
 
         print('end - elitism:', datetime.datetime.now().time())
         #mutation on new offspring
+        populationGenotype = []
         populationGenotype = mutation(newPopulation, mutationProb)
         print('end - mutation:', datetime.datetime.now().time())
 
     #end of Genetic Programming
-    print(f"Finishing last generation! Max individual found with fitness {maxIndividualLastGeneration[1]}: ", maxIndividualLastGeneration[0])
+    #print(f"Finishing last generation! Max individual found with fitness {maxIndividualLastGeneration[1]}: {maxIndividualLastGeneration[0]}")
     # return fitness of the best individual of the last generation
     return maxIndividualLastGeneration[1]
     

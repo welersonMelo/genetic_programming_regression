@@ -83,6 +83,6 @@ def mutateGene(gene):
             if f in functions:
                 gene[u][0] = functions[randint(0, functionsLen-1)]
             else:
-                gene[u][0] = [randint(0, terminalLen-1), randint(0, 1)]
+                gene[u][0] = [randint(0, terminalLen-1), gene[u][1]]
 
             return gene
