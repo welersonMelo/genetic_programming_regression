@@ -107,14 +107,13 @@ def getFitness(gene, testData, completeData, columnToExclude):
     return fitness
 
 def selectionTournament(populationFitness, k):
-    individual1 = randint(0, len(populationFitness)-1)
-    individual2 = randint(0, len(populationFitness)-1)
-
-    if populationFitness[individual1] >= populationFitness[individual2]:
-        return individual1
-    else:
-        return individual2
-
+    maxIndividual = randint(0, len(populationFitness)-1)
+    for i in range(k - 1):
+        individual = randint(0, len(populationFitness)-1)
+        if populationFitness[individual] > populationFitness[maxIndividual]:
+            maxIndividual = individual
+    return maxIndividual
+    
 def createNode(tree, n):
     for i in range(len(tree), n):
         tree.append(None)
@@ -227,10 +226,11 @@ def geneticProgramming(populationSize, generations, initType, testData, complete
             newPopulation.append(child2)
         print('end - crossover:', datetime.datetime.now().time())
         # elitism
+        maxId = populationFitness.index(max(populationFitness))
+        maxIndividualLastGeneration = [populationGenotype[maxId], max(populationFitness)]
         for i in range(elitismNumber):
             maxId = populationFitness.index(max(populationFitness))
             newPopulation.append(populationGenotype[maxId])
-            maxIndividualLastGeneration = [populationGenotype[maxId], max(populationFitness)]
             populationFitness[maxId] = -1
 
         print('end - elitism:', datetime.datetime.now().time())
