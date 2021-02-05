@@ -91,6 +91,7 @@ def dfs(u, tree, point1, point2, fromLeft):
 import time
 def getFitness(gene, testData, completeData, columnToExclude):
     global KNOWN_CLUSTERS
+    gene = np.array(gene, dtype=object)
     # Calculando Fitness
     root = gene[0]
     #print(gene)

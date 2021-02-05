@@ -42,8 +42,8 @@ def main():
             print(line[0])
     
     meanP = allPlots[0]
-    maxP = allPlots[3]
-    minP = allPlots[4]
+    maxP = allPlots[4]
+    minP = allPlots[5]
     plotTreeLines(maxP, meanP, minP, "Generation", "max", "mean", "min", "Fitness vs Generation plot.")
 
 # python plots.py --pathToFile results/result_30_5_0.9_0.05_k-2_2.txt
