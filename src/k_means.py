@@ -22,7 +22,7 @@ def modelTrain(myFunction, clustersNumber, testData):
     # Inicializa centróides utilizando método K-Means++
     initial_centers = kmeans_plusplus_initializer(X, k).initialize()
     # cria instância do K-Means utilizando sua métrica de distância
-    kmeans_instance = kmeans(X, initial_centers, metric=metric)
+    kmeans_instance = kmeans(X, initial_centers, precompute_distances=True, metric=metric)
     # treina o modelo
     kmeans_instance.process()
     # recupera os clusters gerados
