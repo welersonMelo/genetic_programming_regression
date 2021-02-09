@@ -304,10 +304,18 @@ def main():
 
     bestFitness = geneticProgramming(popSize, generations, initPopType, testData, completeData, columnToExclude, k, crossoverProb, mutationProb, elitismNumber)
 
-    fitnessOnEuclidian = [calEuclidianToCompare(testData, completeData, columnToExclude) for _ in range(10)]
+    testDataComplete, testDataTest = initiatePoints('../data/glass_test.csv', columnToExclude)
+    fitnessTest = 0
+    for _ in range(10):
+        fitnessTest += getFitness(bestFitness, testDataTest, testDataComplete, columnToExclude)
+
+    fitnessTest = fitnessTest / 10.0
+
+    fitnessOnEuclidian = [calEuclidianToCompare(testDataTest, testDataComplete, columnToExclude) for _ in range(10)]
     fitnessOnEuclidian = sum(fitnessOnEuclidian) / (1.0 * len(fitnessOnEuclidian))
 
     print("Euclidian result mean: ", fitnessOnEuclidian)
+    print("Our individual mean: ", fitnessTest)
     
     popSiz = args["populationSize"]
     # name is composed by: population size + number of generations + crossover prob + mutation prob + K of tourname + elitism number of inidivdual
@@ -319,6 +327,7 @@ def main():
     f.write('max:' + str(maxByGeneration) + "\n")
     f.write('min:' + str(minByGeneration) + "\n")
     f.write('best final fitness =' + str(bestFitness))
+    f.write('Final on test dataset =' + str(fitnessTest))
     f.close()
 
     # ploting data
